@@ -1,1 +1,144 @@
-<h1>Site em Construção, novidades chegando!</h1>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olho na Garantia - Antifraude de Boletos</title>
+    <style>
+        body {
+            background-color: #113813; /* O seu verde escuro atual */
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        .logo-area {
+            margin-bottom: 30px;
+        }
+        .logo-icon {
+            font-size: 60px;
+            color: #00ff44; /* Verde claro do seu logo */
+        }
+        .brand-name {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        .brand-sub {
+            font-size: 14px;
+            color: #a0c0a0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .tag-em-breve {
+            background-color: #1b531e;
+            color: #00ff44;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 25px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        h1 span {
+            color: #00ff44;
+        }
+        p.description {
+            font-size: 16px;
+            color: #d0e0d0;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        /* Área de Arrastar o Boleto (Diferencial) */
+        .drop-zone {
+            border: 2px dashed #00ff44;
+            border-radius: 12px;
+            padding: 40px 20px;
+            background-color: #164619;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 20px;
+        }
+        .drop-zone:hover {
+            background-color: #1c5820;
+        }
+        .drop-zone-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .drop-zone-subtext {
+            font-size: 13px;
+            color: #a0c0a0;
+            margin-top: 8px;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #80a080;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Área da Logo -->
+        <div class="logo-area">
+            <div class="logo-icon">👁️</div>
+            <div class="brand-name">olho</div>
+            <div class="brand-sub">na garantia</div>
+        </div>
+
+        <div class="tag-em-breve">🚀 NOVA SOLUÇÃO</div>
+
+        <h1>Nunca mais pague um <span>boleto falso</span></h1>
+        
+        <p class="description">
+            O Olho na Garantia analisa o código de barras e o CNPJ do fornecedor em 3 segundos. 
+            Descubra golpes e adulterações antes de digitar a sua senha bancária.
+        </p>
+
+        <!-- Caixa de Upload Fake para o Teste de Fumaça -->
+        <div class="drop-zone" onclick="solicitarContato()">
+            <div class="drop-zone-text">📑 Arraste seu boleto em PDF aqui</div>
+            <div class="drop-zone-subtext">Ou clique para selecionar o arquivo do seu computador</div>
+        </div>
+
+        <p style="font-size: 12px; color: #a0c0a0;">🔒 LGPD Blindado: Não guardamos dados. O arquivo é destruído após a leitura técnica.</p>
+
+        <div class="footer-text">
+            © 2026 Olho na Garantia · Marca registrada no INPI · Todos os direitos reservados.
+        </div>
+    </div>
+
+    <script>
+        // Função que simula a ação e captura o interesse do cliente
+        function solicitarContato() {
+            var whatsapp = prompt("Análise Iniciada!\n\nPara receber o diagnóstico (🟢 Seguro ou 🔴 Fraude) direto no seu celular, informe o seu WhatsApp Corporativo com DDD:");
+            if (whatsapp) {
+                alert("Perfeito! Recebemos o seu pedido. Em instantes nossa equipe enviará o resultado da validação para o número: " + whatsapp);
+                // Aqui no futuro você conectará o Mailgun para disparar o aviso para você
+            }
+        }
+    </script>
+
+</body>
+</html>
+
