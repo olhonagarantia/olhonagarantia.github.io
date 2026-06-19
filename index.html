@@ -3,142 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olho na Garantia - Antifraude de Boletos</title>
+    <title>Olho na Garantia – Em Atualização</title>
+
     <style>
         body {
-            background-color: #113813; /* O seu verde escuro atual */
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             text-align: center;
-            max-width: 600px;
+
+            /* Fundo ilustrado */
+            background: linear-gradient(135deg, #e8f5ee, #ffffff);
+            background-attachment: fixed;
+        }
+
+        /* Textura leve no fundo */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
         }
-        .logo-area {
-            margin-bottom: 30px;
+
+        .container {
+            max-width: 520px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(6px);
         }
-        .logo-icon {
-            font-size: 60px;
-            color: #00ff44; /* Verde claro do seu logo */
-        }
-        .brand-name {
-            font-size: 28px;
+
+        .logo {
+            font-size: 32px;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin-top: 10px;
+            color: #0a8f4a;
+            margin-bottom: 10px;
         }
-        .brand-sub {
-            font-size: 14px;
-            color: #a0c0a0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+
+        .logo span {
+            color: #000;
         }
-        .tag-em-breve {
-            background-color: #1b531e;
-            color: #00ff44;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
+
+        .tag {
             display: inline-block;
-            margin-bottom: 25px;
-        }
-        h1 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            line-height: 1.2;
-        }
-        h1 span {
-            color: #00ff44;
-        }
-        p.description {
-            font-size: 16px;
-            color: #d0e0d0;
-            line-height: 1.6;
-            margin-bottom: 40px;
-        }
-        /* Área de Arrastar o Boleto (Diferencial) */
-        .drop-zone {
-            border: 2px dashed #00ff44;
-            border-radius: 12px;
-            padding: 40px 20px;
-            background-color: #164619;
-            cursor: pointer;
-            transition: background 0.3s;
+            background: #0a8f4a;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 14px;
             margin-bottom: 20px;
         }
-        .drop-zone:hover {
-            background-color: #1c5820;
-        }
-        .drop-zone-text {
-            font-size: 18px;
+
+        h1 {
+            font-size: 26px;
             font-weight: bold;
-            color: #ffffff;
+            margin-bottom: 10px;
         }
-        .drop-zone-subtext {
-            font-size: 13px;
-            color: #a0c0a0;
-            margin-top: 8px;
+
+        h1 span {
+            color: #0a8f4a;
         }
-        .footer-text {
-            font-size: 12px;
-            color: #80a080;
+
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .btn-contato {
+            display: inline-block;
+            background: #0a8f4a;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 16px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s ease-in-out;
+        }
+
+        .btn-contato:hover {
+            background: #066c38;
+        }
+
+        .footer {
             margin-top: 40px;
+            font-size: 13px;
+            color: #777;
         }
     </style>
 </head>
-<body>
 
+<body>
     <div class="container">
-        <!-- Área da Logo -->
-        <div class="logo-area">
-            <div class="logo-icon">👁️</div>
-            <div class="brand-name">olho</div>
-            <div class="brand-sub">na garantia</div>
+        <div class="logo">
+            olho <span>NA GARANTIA</span>
         </div>
 
-        <div class="tag-em-breve">🚀 NOVA SOLUÇÃO</div>
+        <div class="tag">NOVA SOLUÇÃO</div>
 
-        <h1>Nunca mais pague um <span>boleto falso</span></h1>
-        
-        <p class="description">
-            O Olho na Garantia analisa o código de barras e o CNPJ do fornecedor em 3 segundos. 
-            Descubra golpes e adulterações antes de digitar a sua senha bancária.
+        <h1>Estamos passando por uma <span>atualização</span></h1>
+
+        <p>
+            Nosso sistema está recebendo melhorias importantes para oferecer mais segurança e precisão na análise de boletos.
+            Em breve tudo estará funcionando normalmente.
         </p>
 
-        <!-- Caixa de Upload Fake para o Teste de Fumaça -->
-        <div class="drop-zone" onclick="solicitarContato()">
-            <div class="drop-zone-text">📑 Arraste seu boleto em PDF aqui</div>
-            <div class="drop-zone-subtext">Ou clique para selecionar o arquivo do seu computador</div>
-        </div>
+        <a class="btn-contato" href="mailto:contato@olhonagarantia.com.br">
+            Entrar em contato
+        </a>
 
-        <p style="font-size: 12px; color: #a0c0a0;">🔒 LGPD Blindado: Não guardamos dados. O arquivo é destruído após a leitura técnica.</p>
-
-        <div class="footer-text">
-            © 2026 Olho na Garantia · Marca registrada no INPI · Todos os direitos reservados.
+        <div class="footer">
+            © 2026 Olho na Garantia — Todos os direitos reservados.
         </div>
     </div>
-
-    <script>
-        // Função que simula a ação e captura o interesse do cliente
-        function solicitarContato() {
-            var whatsapp = prompt("Análise Iniciada!\n\nPara receber o diagnóstico (🟢 Seguro ou 🔴 Fraude) direto no seu celular, informe o seu WhatsApp Corporativo com DDD:");
-            if (whatsapp) {
-                alert("Perfeito! Recebemos o seu pedido. Em instantes nossa equipe enviará o resultado da validação para o número: " + whatsapp);
-                // Aqui no futuro você conectará o Mailgun para disparar o aviso para você
-            }
-        }
-    </script>
-
 </body>
 </html>
-
