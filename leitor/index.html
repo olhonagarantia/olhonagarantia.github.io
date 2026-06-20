@@ -58,7 +58,8 @@
   .chk .body b{color:var(--txt);font-weight:600;display:block}
   .chk .body .det{color:var(--txt2)}
 
-  .valor-toggle{background:none;border:none;color:var(--verde-vivo);cursor:pointer;font-size:13px;text-decoration:underline;padding:0;margin-left:6px}
+  .valor-toggle{background:none;border:none;color:var(--verde-vivo);cursor:pointer;font-size:16px;padding:2px 4px;margin-left:6px;vertical-align:middle;line-height:1;border-radius:4px;transition:.15s}
+  .valor-toggle:hover{background:rgba(50,191,46,.15)}
 
   .nota{font-size:12px;color:var(--txt2);margin-top:14px;border-top:1px solid var(--linha);padding-top:10px}
   .aviso{font-size:12px;color:var(--txt2);margin-top:6px}
@@ -315,19 +316,38 @@ function dataFmt(iso){
 // ---------- Extração de pagador (CPF/CNPJ) do texto do PDF ----------
 
 function extrairPagador(texto){
-  const re = /pagador[\s\S]{0,220}?(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i;
-  let m = texto.match(re);
-  if(!m){
-    const re2 = /CPF\/?CNPJ:?\s*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i;
-    m = texto.match(re2);
+  // Tenta "Pagador", "Sacado", "Pagante", "Devedor" seguido de CPF ou CNPJ
+  const labels = ['pagador','sacado','pagante','devedor'];
+  for(const label of labels){
+    const re = new RegExp(label + '[\\s\\S]{0,250}?(\\d{3}\\.?\\d{3}\\.?\\d{3}[-/]?\\d{2}|\\d{2}\\.?\\d{3}\\.?\\d{3}\\/?\\d{4}-?\\d{2})', 'i');
+    const m = texto.match(re);
+    if(m){
+      const doc = m[1].replace(/\D/g,'');
+      if(doc.length === 11 || doc.length === 14) return { doc, tipo: doc.length===11 ? 'CPF' : 'CNPJ' };
+    }
   }
-  if(!m) return null;
-  const doc = m[1].replace(/\D/g,'');
-  if(doc.length !== 11 && doc.length !== 14) return null;
-  return { doc, tipo: doc.length===11 ? 'CPF' : 'CNPJ' };
+  // Fallback: procura "CPF/CNPJ" como label genérico
+  const re2 = /CPF\/?CNPJ[\s:]*(\d{3}\.?\d{3}\.?\d{3}[-/]?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i;
+  const m2 = texto.match(re2);
+  if(m2){
+    const doc = m2[1].replace(/\D/g,'');
+    if(doc.length === 11 || doc.length === 14) return { doc, tipo: doc.length===11 ? 'CPF' : 'CNPJ' };
+  }
+  return null;
 }
 
 function extrairCnpjBeneficiario(texto){
+  // Tenta "Beneficiário", "Cedente", "Favorecido" seguido de CNPJ
+  const labels = ['benefici[aá]rio','cedente','favorecido'];
+  for(const label of labels){
+    const re = new RegExp(label + '[\\s\\S]{0,200}?(\\d{2}\\.?\\d{3}\\.?\\d{3}\\/?\\d{4}-?\\d{2})', 'i');
+    const m = texto.match(re);
+    if(m){
+      const cnpj = m[1].replace(/\D/g,'');
+      if(cnpj.length === 14) return cnpj;
+    }
+  }
+  // Fallback: primeiro CNPJ no texto
   const m = texto.match(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
   if(!m) return null;
   const cnpj = m[0].replace(/\D/g,'');
@@ -354,8 +374,12 @@ let valorRevelado = false;
 
 function renderValor(){
   const span = document.getElementById('valTxt');
+  const btn = document.getElementById('valBtn');
   if(!span) return;
   span.textContent = valorRevelado ? brl(valorAtual) : 'R$ ••••••';
+  if(btn) btn.innerHTML = valorRevelado
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
 
 function toggleValor(){
@@ -395,7 +419,7 @@ function mostrar(r){
       valorAtual = d.valor;
       valorRevelado = false;
       h += chk('ok', 'Valor',
-        '<span id="valTxt">R$ ••••••</span> <button class="valor-toggle" onclick="toggleValor()">mostrar/ocultar</button>');
+        '<span id="valTxt">R$ ••••••</span> <button id="valBtn" class="valor-toggle" onclick="toggleValor()" title="Mostrar/ocultar valor"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>');
     } else {
       h += chk('warn', 'Valor', 'não identificado');
     }
