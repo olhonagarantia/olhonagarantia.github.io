@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proteção Básica — Leitor de boleto (client-side)</title>
+<style>
+  :root{
+    --verde-escuro:#1A4314; 
+    --verde-medio:#447A2D; 
+    --verde-vivo:#32BF2E;
+    --bg:#0e2a0c; 
+    --card:#14380f; 
+    --linha:#2a5a22; 
+    --txt:#e8f3e2; 
+    --txt2:#a9c7a0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);padding:24px 16px;line-height:1.5}
+  .wrap{max-width:520px;margin:0 auto}
+  
+  /* Estilização do Logo Oficial */
+  .logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .logo {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--verde-vivo);
+    letter-spacing: -1px;
+  }
+  .logo span {
+    color: #FFFFFF;
+    font-weight: 300;
+    font-size: 28px;
+    margin-left: 4px;
+  }
+
+  h1{font-size:19px;font-weight:600;margin:0 0 4px;text-align:center}
+  .sub{color:var(--txt2);font-size:13px;margin:0 0 18px;text-align:center}
+  #drop{border:1.5px dashed var(--verde-medio);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;transition:.15s;background:rgba(255,255,255,.02)}
+  #drop.over{border-color:var(--verde-vivo);background:rgba(50,191,46,.08)}
+  #drop strong{display:block;font-size:15px;margin-bottom:2px}
+  #drop span{color:var(--txt2);font-size:12px}
+  .ou{display:flex;align-items:center;gap:10px;margin:16px 0 10px;color:var(--txt);font-size:14px;font-weight:600}
+  .ou::before,.ou::after{content:'';flex:1;height:1px;background:var(--linha)}
+  .colar{display:flex;gap:8px}
+  .colar input{flex:1;min-width:0;padding:11px;border-radius:8px;border:1px solid var(--linha);background:var(--bg);color:var(--txt);font-size:14px}
+  .colar button{padding:11px 18px;border-radius:8px;border:1px solid var(--verde-vivo);background:var(--verde-vivo);color:#0e2a0c;font-weight:600;cursor:pointer;font-size:14px;white-space:nowrap}
+  @media (max-width:480px){ body{padding:16px 14px} h1{font-size:18px} #drop{padding:16px 12px} .logo{font-size:26px} .logo span{font-size:22px} }
+  .result{margin-top:20px;border-radius:12px;padding:18px;display:none}
+  .result.show{display:block}
+  .selo{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .verde{background:rgba(50,191,46,.10);border:1px solid #2e7d32}
+  .verde .selo{color:#7be36f}
+  .amarelo{background:rgba(240,180,40,.10);border:1px solid #b78a17}
+  .amarelo .selo{color:#f0c04a}
+  .vermelho{background:rgba(226,75,74,.10);border:1px solid #a32d2d}
+  .vermelho .selo{color:#ef8b8b}
+  .checks{display:flex;flex-direction:column;gap:11px}
+  .chk{display:flex;gap:10px;font-size:13px;align-items:flex-start}
+  .chk>span:first-child{font-weight:700;min-width:16px;text-align:center}
+  .chk b{color:var(--txt);font-weight:500}
+  .chk .det{color:var(--txt2)}
+  .nota{font-size:12px;color:var(--txt2);margin-top:14px;border-top:1px solid var(--linha);padding-top:10px}
+  .aviso{font-size:12px;color:var(--txt2);margin-top:6px}
+  .lead{margin-top:16px;display:none}
+  .lead.show{display:block}
+  .lead input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--linha);background:var(--bg);color:var(--txt);font-size:14px;margin-top:6px}
+  .lead label{font-size:13px;color:var(--txt2);display:flex;gap:8px;align-items:flex-start;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Logotipo Integrado -->
+  <div class="logo-container">
+    <div class="logo">olho<span>NA GARANTIA</span></div>
+  </div>
+
+  <h1>Confira seu boleto</h1>
+  <p class="sub">O arquivo nunca sai do seu computador. A leitura acontece aqui no navegador.</p>
+
+  <div id="drop">
+    <strong>Arraste seu boleto em PDF aqui</strong>
+    <span>ou clique para selecionar</span>
+    <input type="file" id="file" accept="application/pdf" hidden>
+  </div>
+
+  <div class="ou">ou cole a linha digitável do boleto</div>
+  <div class="colar">
+    <input type="text" id="manual" placeholder="Ex.: 34191.09180 58209.952934 ...">
+    <button id="btn">Conferir</button>
+  </div>
+
+  <div id="result" class="result">
+    <div class="selo" id="selo"></div>
+    <div class="checks" id="checks"></div>
+    <div id="benef"></div>
+    <div id="pagador"></div>
+    <p class="nota">Conferimos a integridade do boleto. Não comparamos com o seu histórico de pagamentos — isso é a Proteção Máxima.</p>
+    <p class="aviso">Apoio à decisão. Em caso de dúvida, confirme sempre no canal oficial do fornecedor antes de pagar.</p>
+    <div class="lead" id="lead">
+      <input type="text" id="whats" placeholder="Seu WhatsApp (opcional) — avisamos você de golpes">
+      <label><input type="checkbox" id="consent"> Autorizo o contato pelo WhatsApp informado.</label>
+    </div>
+  </div>
+</div>
+
+<script src="https://cloudflare.com"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
+
+async function extrairTexto(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let texto='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    texto += content.items.map(it=>it.str).join(' ')+' ';
+  }
+  return texto;
+}
+
+function dvMod10(num){
+  let soma=0, peso=2;
+  for(let i=num.length-1;i>=0;i--){ 
+    let n=(+num[i])*peso; 
+    if(n>9) n=Math.floor(n/10)+(n%10); 
+    soma+=n; 
+    peso=peso===2?1:2; 
+  }
+  return (10-(soma%10))%10;
+}
+
+function dvMod11(barra){
+  const pesos=[2,3,4,5,6,7,8,9]; let soma=0,p=0;
+  for(let i=barra.length-1;i>=0;i--){ soma+=(+barra[i])*pesos[p]; p=(p+1)%8; }
+  const resto=soma%11; let dv=11-resto; if(dv===0||dv===10||dv===11) dv=1; return dv;
+}
+
+function dvMod11Arr(num){
+  const pesos=[2,3,4,5,6,7,8,9]; let soma=0,p=0;
+  for(let i=num.length-1;i>=0;i--){ soma+=(+num[i])*pesos[p]; p=(p+1)%8; }
+  let dv=11-(soma%11); if(dv===0||dv===10||dv===11) dv=0; return dv;
+}
+
+function cobrancaDvOk(l){
+  if(l.length !== 47) return false;
+  if(dvMod10(l.slice(0,9))!==+l[9]) return false;
+  if(dvMod10(l.slice(10,20))!==+l[20]) return false;
+  if(dvMod10(l.slice(21,31))!==+l[31]) return false;
+  const barra43 = l.slice(0,4)+l.slice(33,47)+l.slice(4,9)+l.slice(10,20)+l.slice(21,31);
+  return dvMod11(barra43)===+l[32];
+}
+
+function blocosArrecadacaoOk(s){
+  if(s.length !== 48) return false;
+  const usaMod11=(s[2]==='8'||s[2]==='9');
+  for(let b=0;b<4;b++){ 
+    const bl=s.slice(b*12,b*12+12); 
+    const calc=usaMod11?dvMod11Arr(bl.slice(0,11)):dvMod10(bl.slice(0,11)); 
+    if(calc!==+bl[11]) return false; 
+  }
+  return true;
+}
+
+function acharLinha(texto){
+  const cands = (texto.match(/[\d.\s]{40,}/g)||[]).map(c=>c.replace(/\D/g,'')).filter(d=>d.length>=47);
+  let fallback=null;
+  for(const d of cands){
+    for(let i=0;i+48<=d.length;i++){ const s=d.slice(i,i+48); if(s[0]==='8'){ if(blocosArrecadacaoOk(s)) return s; if(!fallback) fallback=s; } }
+    for(let i=0;i+47<=d.length;i++){ const s=d.slice(i,i+47); if(cobrancaDvOk(s)) return s; }
+    if(!fallback && d.length>=47) fallback=d.slice(0,47);
+  }
+  return fallback;
+}
+
+const BANCOS={'001':'Banco do Brasil','033':'Santander','104':'Caixa','237':'Bradesco','341':'Itaú','260':'Nubank','077':'Inter','336':'C6','212':'Original','748':'Sicredi','756':'Sicoob','422':'Safra'};
+const SEGMENTOS={1:'Prefeitura',2:'Saneamento / água',3:'Energia / gás',4:'Telecom',5:'Órgão do governo',6:'Carnês',7:'Multas de trânsito',9:'Outros'};
+const FORNECEDORES=[
+  [/vivo|telef[oô]nica/i,'Vivo'],[/claro|embratel/i,'Claro'],[/\btim\b/i,'TIM'],[/\boi\b|oi m[oó]vel/i,'Oi'],
+  [/sabesp/i,'Sabesp'],[/copasa/i,'Copasa'],[/sanepar/i,'Sanepar'],[/embasa/i,'Embasa'],[/caesb/i,'Caesb'],[/cedae|[aá]guas do rio/i,'Águas do Rio'],[/compesa/i,'Compesa'],[/cagece/i,'Cagece'],
+  [/\benel\b/i,'Enel'],[/\bcpfl\b/i,'CPFL'],[/\blight\b/i,'Light'],[/cemig/i,'Cemig'],[/copel/i,'Copel'],[/equatorial/i,'Equatorial'],[/energisa/i,'Energisa'],[/neoenergia|coelba|celpe|cosern/i,'Neoenergia'],[/celesc/i,'Celesc'],[/elektro/i,'Elektro'],
+];
+
+function detectarFornecedor(t){ if(!t) return null; for(const [re,n] of FORNECEDORES) if(re.test(t)) return n; return null; }
+
+function lerCobranca(l){
+  const banco=l.slice(0,3);
+  const valor=(+l.slice(37,47))/100;
+  const fator=+l.slice(33,37);
+  const venc=fator>0?new Date(Date.UTC(2025,1,22)+(fator-1000)*86400000):null;
+  return {tipo:'Boleto bancário',banco,valor,venc,dvOk:cobrancaDvOk(l)};
+}
+
+function lerArrecadacao(s){
+  let barra=''; for(let b=0;b<4;b++) barra+=s.slice(b*12,b*12+11);
+  return {tipo:'Conta de concessionária',segmento:SEGMENTOS[+barra[1]]||'Desconhecido',valor:(+barra.slice(4,15))/100,venc:null,dvOk:blocosArrecadacaoOk(s)};
+}
+
+function analisar(l){
+  const d=(l.length===48&&l[0]==='8')?lerArrecadacao(l):lerCobranca(l);
+  let nivel, msg;
+  if(!d.dvOk){ nivel='vermelho'; msg='Atenção: o código não confere'; }
+  else if(d.valor===0){ nivel='amarelo'; msg='Confira: valor não identificado'; }
+  else { nivel='verde'; msg='Boleto íntegro'; }
+  return {nivel, msg, dados:d};
+}
+
+function brl(v){ return 'R$ '+v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits:2}); }
+function cnpjFmt(c){ return c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'); }
+function dataFmt(iso){ const p=(""+iso).split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso; }
+function cpfFmt(c){ return c.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4'); }
+function docFmt(doc){ return doc.length===11?cpfFmt(doc):cnpjFmt(doc); }
+
+let valorTexto='', valorRevelado=false;
+function toggleValor() { 
+  valorRevelado=!valorRevelado; 
+  const t=document.getElementById('valTxt'); 
+  if(t) t.textContent=valorRevelado?valorTexto:'R$ ••••••'; 
+}
+
+function extrairPagador(texto){const m=texto.match(/pagador(\s\S){0,220}?(\d{3}.?\d{3}.?\d{3}-?\d{2}|\d{2}.?\d{3}.?\d{3}/?\d{4}-?\d{2})/i)|| texto.match(/CPF/?CNPJ:?\s*(\d{3}.?\d{3}.?\d{3}-?\d{2}|\d{2}.?\d{3}.?\d{3}/?\d{4}-?\d{2})/i);if(!m) return null;const doc=m(1).replace(/\D/g,'');return {doc,tipo:doc.length===11?'CPF':'CNPJ'};}function mostrarPagador(texto){const el=document.getElementById('pagador'); if(!el || !texto) return;const p=extrairPagador(texto); if(!p) return;el.innerHTML=chk('ok', 'Pagador (você)', ${p.tipo}: ${docFmt(p.doc)});}function chk(estado, titulo, detalhe){const ic={ok:'✓', warn:'!', bad: 'X', wait:'...', info:'ℹ'}(estado);const cor={ok:'#7be36f', warn:'#f0c04a', bad: '#ef8b8b', wait:'#a9c7a0', info:'#a9c7a0'}(estado);return <div class="chk"><span style="color:${cor}">${ic}</span><div><b>${titulo}</b><br><span class="det">${detalhe}</span></div></div>;}const drop=document.getElementById('drop'), input=document.getElementById('file');const result=document.getElementById('result'), selo=document.getElementById('selo'),checks=document.getElementById('checks'), lead=document.getElementById('lead');function mostrar(r){const d=r.dados;result.className='result show '+r.nivel;selo.textContent=r.msg;let h='';const intOk=d.dvOk!==false;h+=chk(intOk?'ok':'bad', 'Código de barras', intOk?'íntegro, sem sinais de adulteração':'NÃO confere — possível adulteração');if(d.tipo && d.tipo!=='-'){let cat=d.fornecedor?${d.fornecedor} — ${d.segmento || d.tipo}:(d.segmento || d.tipo);if(d.banco) cat+= — ${BANCOS[d.banco] || ('banco '+d.banco)};h+=chk('ok', 'Emissor', cat);}if(d.valor!=null){if(d.valor>0){valorTexto=brl(d.valor); valorRevelado=false;h+=<div class="chk"><span style="color:#7be36f">✓</span><div><b>Valor</b><br><span class="det"><span id="valTxt">R$ ••••••</span> <span onclick="toggleValor()" style="cursor:pointer; text-decoration:underline; font-size:11px; margin-left:6px;">(mostrar/ocultar)</span></span></div></div>;} else { h+=chk('warn', 'Valor', 'não identificado'); }}if(d.venc) h+=chk('ok', 'Vencimento', d.venc.toLocaleDateString('pt-BR'));h+='';checks.innerHTML=h;}async function enriquecerCNPJ(texto){const benef=document.getElementById('benef');if(!benef||!texto) return;const m=texto.match(/\d{2}.?\d{3}.?\d{3}/?\d{4}-?\d{2}/);if(!m) return;const cnpj=m(0).replace(/\D/g,'');benef.innerHTML=chk('wait', 'Beneficiário', consultando CNPJ ${cnpjFmt(cnpj)}...);try{const resp=await fetch('brasilapi.com.br);if(!resp.ok) throw 0;const j=await resp.json();const ativa=(j.descricao_situacao_cadastral||'').toUpperCase().includes('ATIVA');let det=${j.razao_social||'-'}<br>Situação na Receita: ${j.descricao_situacao_cadastral||'-'};if(j.data_inicio_atividade){det+= aberta em ${dataFmt(j.data_inicio_atividade)};}benef.innerHTML=chk(ativa?'ok':'bad', Beneficiário CNPJ ${cnpjFmt(cnpj)}, det);}catch(e){benef.innerHTML=chk('warn', 'Beneficiário', não consegui consultar o CNPJ ${cnpjFmt(cnpj)} agora);}}drop.onclick=()=>input.click();drop.ondragover=e=>{e.preventDefault(); drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=e=>{e.preventDefault(); drop.classList.remove('over'); if(e.dataTransfer.files(0)) processar(e.dataTransfer.files(0))};input.onchange=()=>{if(input.files(0)) processar(input.files(0))};async function processar(file){selo.textContent='Lendo...'; result.className='result show'; checks.innerHTML='';lead.className='lead';try{const texto = await extrairTexto(file);const linha = acharLinha(texto);if(!linha){result.className='result show amarelo';selo.textContent='! Não encontrei a linha digitável';checks.innerHTML=chk('warn', 'Dica', 'cole a linha digitável no campo acima');return;}const r=analisar(linha);r.dados.fornecedor = detectarFornecedor(texto);mostrar(r);await enriquecerCNPJ(texto);mostrarPagador(texto);registrarUso();lead.className='lead show';}catch(err){result.className='result show amarelo';selo.textContent='! Não consegui ler o PDF';checks.innerHTML=chk('warn', 'Tente assim', 'cole a linha digitável no campo acima — funciona sempre');}}function conferirLinha(raw){const d=(raw ||'').replace(/\D/g,'');if(d.length !==47 && !(d.length===48&&d(0)==='8')){result.className='result show amarelo';selo.textContent='! Linha digitável incompleta';checks.innerHTML=chk('warn', 'Conferência', recebi ${d.length} dígitos; um boleto tem 47 ou 48);return;}mostrar(analisar(d));const benef=document.getElementById('benef');if(benef) benef.innerHTML=chk('info', 'Beneficiário e pagador', 'arraste o PDF para identificar — a linha digitável não traz esses dados');lead.className='lead show';}document.getElementById('btn').onclick=()=>conferirLinha(document.getElementById('manual').value);document.getElementById('manual').addEventListener('keydown',e=>{ if(e.key==='Enter') conferirLinha(e.target.value); });function registrarUso(){fetch('SEU_ENDPOINT', {method: 'POST', body:JSON.stringify({evento:'uso', quando:Date.now()})}).catch(()=>{});}
