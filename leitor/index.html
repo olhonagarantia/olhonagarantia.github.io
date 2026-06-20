@@ -17,10 +17,6 @@
   .logo span { color: #FFFFFF; font-weight: 300; font-size: 28px; margin-left: 4px; }
   h1{font-size:19px;font-weight:600;margin:0 0 4px;text-align:center}
   .sub{color:var(--txt2);font-size:13px;margin:0 0 18px;text-align:center}
-  #drop{border:1.5px dashed var(--verde-medio);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)}
-  #drop.over{border-color:var(--verde-vivo);background:rgba(50,191,46,.08)}
-  #drop strong{display:block;font-size:15px;margin-bottom:2px}
-  #drop span{color:var(--txt2);font-size:12px}
   .ou{display:flex;align-items:center;gap:10px;margin:16px 0 10px;font-size:14px;font-weight:600}
   .ou::before,.ou::after{content:'';flex:1;height:1px;background:var(--linha)}
   .colar{display:flex;gap:8px}
@@ -30,58 +26,30 @@
   .result.show{display:block}
   .selo{font-size:17px;font-weight:600;margin-bottom:14px}
   .verde{background:rgba(50,191,46,.10);border:1px solid #2e7d32}
-  .amarelo{background:rgba(240,180,40,.10);border:1px solid #b78a17}
   .vermelho{background:rgba(226,75,74,.10);border:1px solid #a32d2d}
   .checks{display:flex;flex-direction:column;gap:11px}
   .chk{display:flex;gap:10px;font-size:13px;align-items:flex-start}
-  .nota,.aviso{font-size:12px;color:var(--txt2);margin-top:14px}
-  .lead{margin-top:16px;display:none}
-  .lead.show{display:block}
-  .lead input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--linha);background:var(--bg);color:var(--txt);font-size:14px;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="logo-container"><div class="logo">olho<span>NA GARANTIA</span></div></div>
   <h1>Confira seu boleto</h1>
-  <p class="sub">O arquivo nunca sai do seu computador. A leitura acontece aqui no navegador.</p>
-  <div id="drop">
-    <strong>Arraste seu boleto em PDF aqui</strong>
-    <span>ou clique para selecionar</span>
-    <input type="file" id="file" accept="application/pdf" hidden>
-  </div>
-  <div class="ou">ou cole a linha digitável do boleto</div>
+  <p class="sub">Validação matemática local e segura.</p>
+  
+  <div class="ou">Cole a linha digitável do boleto (47 dígitos)</div>
   <div class="colar">
-    <input type="text" id="manual" placeholder="Ex.: 34191.09180 58209.952934 ...">
+    <input type="text" id="manual" placeholder="Ex.: 341910918058209952934...">
     <button id="btn">Conferir</button>
   </div>
+  
   <div id="result" class="result">
     <div class="selo" id="selo"></div>
     <div class="checks" id="checks"></div>
-    <p class="nota">Conferimos a integridade do boleto. Não comparamos com seu histórico.</p>
-    <div class="lead" id="lead">
-      <input type="text" id="whats" placeholder="Seu WhatsApp (opcional)">
-    </div>
   </div>
 </div>
 
-<script src="https://cloudflare.com"></script>
 <script>
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
-
-async function extrairTexto(file){
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-  let texto='';
-  for(let i=1;i<=pdf.numPages;i++){
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    texto += content.items.map(it=>it.str).join(' ')+' ';
-  }
-  return texto;
-}
-
 function dvMod10(num){
   let soma=0, peso=2;
   for(let i=num.length-1;i>=0;i--){ 
@@ -92,118 +60,62 @@ function dvMod10(num){
   return (10-(soma%10))%10;
 }
 
-// NOVA LÓGICA: Pesos calculados via código para nunca mais cortar no chat
-function calcularMod11Base(num, isArr) {
+function dvMod11(barra){
   let soma=0, p=0;
-  for(let i=num.length-1;i>=0;i--){
+  for(let i=barra.length-1;i>=0;i--){
     let peso = 2 + (p % 8);
-    soma += (+num[i]) * peso;
+    soma += (+barra[i]) * peso;
     p++;
   }
   let resto = soma % 11;
-  if(isArr) {
-    let dv = 11 - resto;
-    return (dv===0||dv===10||dv===11) ? 0 : dv;
-  } else {
-    let dv = 11 - resto;
-    return (dv===0||dv===10||dv===11) ? 1 : dv;
-  }
+  let dv = 11 - resto;
+  return (dv===0||dv===10||dv===11) ? 1 : dv;
 }
-function dvMod11(barra){ return calcularMod11Base(barra, false); }
-function dvMod11Arr(num){ return calcularMod11Base(num, true); }
 
 function cobrancaDvOk(l){
   if(l.length !== 47) return false;
   if(dvMod10(l.slice(0,9))!==+l[9]) return false;
   if(dvMod10(l.slice(10,20))!==+l[20]) return false;
   if(dvMod10(l.slice(21,31))!==+l[31]) return false;
-  const barra43 = l.slice(0,4)+l.slice(33,47)+l.slice(4,9)+l.slice(10,20)+l.slice(21,31);
+  const barra43 = l.slice(0,4)+l.slice(32,47)+l.slice(4,9)+l.slice(10,20)+l.slice(21,31);
   return dvMod11(barra43)===+l[32];
-}
-
-function blocosArrecadacaoOk(s){
-  if(s.length !== 48) return false;
-  for(let b=0;b<4;b++){ 
-    const bl=s.slice(b*12,b*12+12); 
-    const calc= (s[2]==='8'||s[2]==='9') ? dvMod11Arr(bl.slice(0,11)) : dvMod10(bl.slice(0,11)); 
-    if(calc!==+bl[11]) return false; 
-  }
-  return true;
-}
-
-function acharLinha(texto){
-  const cands = (texto.match(/[\d.\s]{40,}/g)||[]).map(c=>c.replace(/\D/g,'')).filter(d=>d.length>=47);
-  let fallback=null;
-  for(const d of cands){
-    for(let i=0;i+48<=d.length;i++){ const s=d.slice(i,i+48); if(s[0]==='8'){ if(blocosArrecadacaoOk(s)) return s; if(!fallback) fallback=s; } }
-    for(let i=0;i+47<=d.length;i++){ const s=d.slice(i,i+47); if(cobrancaDvOk(s)) return s; }
-    if(!fallback && d.length>=47) fallback=d.slice(0,47);
-  }
-  return fallback;
 }
 
 const BANCOS={'001':'Banco do Brasil','033':'Santander','104':'Caixa','237':'Bradesco','341':'Itaú','260':'Nubank','077':'Inter'};
 
-function lerCobranca(l){
-  const banco=l.slice(0,3);
-  const valor=(+l.slice(37,47))/100;
-  return {tipo:'Boleto bancário',banco:BANCOS[banco]||('Banco '+banco),valor,dvOk:cobrancaDvOk(l)};
-}
-function lerArrecadacao(s){
-  let barra=''; for(let b=0;b<4;b++) barra+=s.slice(b*12,b*12+11);
-  return {tipo:'Conta de concessionária',valor:(+barra.slice(4,15))/100,dvOk:blocosArrecadacaoOk(s)};
-}
-
-function analisar(l){
-  const d=(l.length===48&&l[0]==='8')?lerArrecadacao(l):lerCobranca(l);
-  let nivel = !d.dvOk ? 'vermelho' : (d.valor===0 ? 'amarelo' : 'verde');
-  let msg = !d.dvOk ? 'Atenção: código inválido' : 'Boleto estruturalmente íntegro';
-  return {nivel, msg, dados:d};
-}
-
 function chk(estado, titulo, detalhe){
-  const ic={ok:'✓', warn:'!', bad: 'X'}[estado] || 'ℹ';
-  const cor={ok:'#7be36f', warn:'#f0c04a', bad: '#ef8b8b'}[estado] || '#fff';
+  const ic=estado==='ok'?'✓':'X';
+  const cor=estado==='ok'?'#7be36f':'#ef8b8b';
   return '<div class="chk"><span style="color:'+cor+'">'+ic+'</span><div><b>'+titulo+'</b><br><span class="det">'+detalhe+'</span></div></div>';
-}
-
-const drop=document.getElementById('drop'), input=document.getElementById('file');
-const result=document.getElementById('result'), selo=document.getElementById('selo'), checks=document.getElementById('checks');
-
-function mostrar(r){
-  const d=r.dados;
-  result.className='result show '+r.nivel;
-  selo.textContent=r.msg;
-  let h=chk(d.dvOk?'ok':'bad', 'Código de barras', d.dvOk?'Linha matemática válida':'Dígito verificador incorreto');
-  if(d.banco) h+=chk('ok', 'Emissor', d.banco);
-  if(d.valor) h+=chk('ok', 'Valor', 'R$ '+d.valor.toFixed(2).replace('.',','));
-  checks.innerHTML=h;
-}
-
-drop.addEventListener('click', () => { input.click(); });
-drop.ondragover=e=>{e.preventDefault(); drop.classList.add('over')};
-drop.ondragleave=()=>drop.classList.remove('over');
-drop.ondrop=e=>{e.preventDefault(); drop.classList.remove('over'); if(e.dataTransfer.files.length > 0) processar(e.dataTransfer.files[0]); };
-input.onchange=()=>{if(input.files.length > 0) processar(input.files[0]); };
-
-async function processar(file){
-  selo.textContent='Lendo...'; result.className='result show'; checks.innerHTML='';
-  try{
-    const texto = await extrairTexto(file);
-    const linha = acharLinha(texto);
-    if(!linha){ 
-      result.className='result show amarelo'; selo.textContent='Linha não encontrada';
-      return;
-    }
-    mostrar(analisar(linha));
-  }catch(err){
-    result.className='result show vermelho'; selo.textContent='Erro ao ler o PDF';
-  }
 }
 
 document.getElementById('btn').onclick=()=>{
   const val = document.getElementById('manual').value.replace(/\D/g,'');
-  if(val.length>=47) mostrar(analisar(val));
+  const result=document.getElementById('result');
+  const selo=document.getElementById('selo');
+  const checks=document.getElementById('checks');
+  
+  result.className='result show';
+  
+  if(val.length !== 47) {
+    result.className+=' vermelho';
+    selo.textContent='Erro de tamanho';
+    checks.innerHTML=chk('bad', 'Conferência', 'A linha precisa ter exatamente 47 dígitos. Recebi ' + val.length);
+    return;
+  }
+  
+  const ok = cobrancaDvOk(val);
+  if(ok) {
+    result.className+=' verde';
+    selo.textContent='Boleto estruturalmente íntegro';
+    let banco = BANCOS[val.slice(0,3)] || 'Banco desconhecido';
+    let valor = (+val.slice(37,47))/100;
+    checks.innerHTML=chk('ok', 'Código de barras', 'Cálculo matemático válido.') + chk('ok', 'Banco Emissor', banco) + chk('ok', 'Valor', 'R$ ' + valor.toFixed(2).replace('.',','));
+  } else {
+    result.className+=' vermelho';
+    selo.textContent='Atenção: dígito verificador incorreto';
+    checks.innerHTML=chk('bad', 'Fraude potencial', 'A linha digitável falhou no teste matemático dos blocos.');
+  }
 };
 </script>
 </body>
