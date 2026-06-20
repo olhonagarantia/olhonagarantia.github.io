@@ -105,7 +105,6 @@
   </div>
 </div>
 
-<!-- Correção da Biblioteca: Importando da CDN segura do Google -->
 <script src="https://cloudflare.com"></script>
 <script>
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -135,13 +134,13 @@ function dvMod10(num){
 }
 
 function dvMod11(barra){
-  const pesos=[2,3,4,5,6,7,8,9]; let soma=0,p=0;
+  const pesos =; let soma=0,p=0;
   for(let i=barra.length-1;i>=0;i--){ soma+=(+barra[i])*pesos[p]; p=(p+1)%8; }
   const resto=soma%11; let dv=11-resto; if(dv===0||dv===10||dv===11) dv=1; return dv;
 }
 
 function dvMod11Arr(num){
-  const pesos=[2,3,4,5,6,7,8,9]; let soma=0,p=0;
+  const pesos =; let soma=0,p=0;
   for(let i=num.length-1;i>=0;i--){ soma+=(+num[i])*pesos[p]; p=(p+1)%8; }
   let dv=11-(soma%11); if(dv===0||dv===10||dv===11) dv=0; return dv;
 }
@@ -223,10 +222,130 @@ function toggleValor() {
 }
 
 function extrairPagador(texto){
-  const m=texto.match(/pagador[\s\S]{0,220}?(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i)
-  || texto.match(/CPF\/?CNPJ:?\s*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i);
-  if(!m) return null;
-  const doc=m[1].replace(/\D/g,'');
-  return {doc,tipo:doc.length===11?'CPF':'CNPJ'};
+const m=texto.match(/pagador(\s\S){0,220}?(\d{3}.?\d{3}.?\d{3}-?\d{2}|\d{2}.?\d{3}.?
+|| texto.match(/CPF/?CNPJ:?\s*(\d{3}.?\d{3}.?\d{3}-?\d{2}|\d{2}.?\d{3}.?\d{3}/?\d{4}-?
+\d{2})/i);
+if(!m) return null;
+const doc=m.replace(/\D/g,'');
+return {doc,tipo:doc.length===11?'CPF':'CNPJ'};
 }
-function mostrarPagador(texto){const el=document.getElementById('pagador'); if(!el || !texto) return;const p=extrairPagador(texto); if(!p) return;el.innerHTML=chk('ok', 'Pagador (você)', ${p.tipo}: ${docFmt(p.doc)});}function chk(estado, titulo, detalhe){const ic={ok:'✓', warn:'!', bad: 'X', wait:'...', info:'ℹ'}(estado);const cor={ok:'#7be36f', warn:'#f0c04a', bad: '#ef8b8b', wait:'#a9c7a0', info:'#a9c7a0'}(estado);return <div class="chk"><span style="color:${cor}">${ic}</span><div><b>${titulo}</b><br><span class="det">${detalhe}</span></div></div>;}const drop=document.getElementById('drop'), input=document.getElementById('file');const result=document.getElementById('result'), selo=document.getElementById('selo'),checks=document.getElementById('checks'), lead=document.getElementById('lead');function mostrar(r){const d=r.dados;result.className='result show '+r.nivel;selo.textContent=r.msg;let h='';const intOk=d.dvOk!==false;h+=chk(intOk?'ok':'bad', 'Código de barras', intOk?'íntegro, sem sinais de adulteração':'NÃO confere — possível adulteração');if(d.tipo && d.tipo!=='-'){let cat=d.fornecedor?${d.fornecedor} — ${d.segmento || d.tipo}:(d.segmento || d.tipo);if(d.banco) cat+= — ${BANCOS[d.banco] || ('banco '+d.banco)};h+=chk('ok', 'Emissor', cat);}if(d.valor!=null){if(d.valor>0){valorTexto=brl(d.valor); valorRevelado=false;h+=<div class="chk"><span style="color:#7be36f">✓</span><div><b>Valor</b><br><span class="det"><span id="valTxt">R$ ••••••</span> <span onclick="toggleValor()" style="cursor:pointer; text-decoration:underline; font-size:11px; margin-left:6px;">(mostrar/ocultar)</span></span></div></div>;} else { h+=chk('warn', 'Valor', 'não identificado'); }}if(d.venc) h+=chk('ok', 'Vencimento', d.venc.toLocaleDateString('pt-BR'));h+='';checks.innerHTML=h;}async function enriquecerCNPJ(texto){const benef=document.getElementById('benef');if(!benef||!texto) return;const m=texto.match(/\d{2}.?\d{3}.?\d{3}/?\d{4}-?\d{2}/);if(!m) return;const cnpj=m(0).replace(/\D/g,'');benef.innerHTML=chk('wait', 'Beneficiário', consultando CNPJ ${cnpjFmt(cnpj)}...);try{const resp=await fetch('brasilapi.com.br);if(!resp.ok) throw 0;const j=await resp.json();const ativa=(j.descricao_situacao_cadastral||'').toUpperCase().includes('ATIVA');let det=${j.razao_social||'-'}<br>Situação na Receita: ${j.descricao_situacao_cadastral||'-'};if(j.data_inicio_atividade){det+= aberta em ${dataFmt(j.data_inicio_atividade)};}benef.innerHTML=chk(ativa?'ok':'bad', Beneficiário CNPJ ${cnpjFmt(cnpj)}, det);}catch(e){benef.innerHTML=chk('warn', 'Beneficiário', não consegui consultar o CNPJ ${cnpjFmt(cnpj)} agora);}}drop.addEventListener('click', () => { input.click(); });drop.ondragover=e=>{e.preventDefault(); drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=e=>{e.preventDefault(); drop.classList.remove('over'); if(e.dataTransfer.files.length > 0) processar(e.dataTransfer.files); };input.onchange=()=>{if(input.files.length > 0) processar(input.files); };async function processar(files){if(!files || files.length === 0) return;selo.textContent='Lendo...'; result.className='result show'; checks.innerHTML='';lead.className='lead';try{const texto = await extrairTexto(files(0));const linha = acharLinha(texto);if(!linha){result.className='result show amarelo';selo.textContent='! Não encontrei a linha digitável';checks.innerHTML=chk('warn', 'Dica', 'cole a linha digitável no campo acima');return;}const r=analisar(linha);r.dados.fornecedor = detectarFornecedor(texto);mostrar(r);await enriquecerCNPJ(texto);mostrarPagador(texto);lead.className='lead show';}catch(err){result.className='result show amarelo';selo.textContent='! Não consegui ler o PDF';checks.innerHTML=chk('warn', 'Tente assim', 'cole a linha digitável no campo acima — funciona sempre');}}function conferirLinha(raw){const d=(raw ||'').replace(/\D/g,'');if(d.length !==47 && !(d.length===48&&d(0)==='8')){result.className='result show amarelo';selo.textContent='! Linha digitável incompleta';checks.innerHTML=chk('warn', 'Conferência', recebi ${d.length} dígitos; um boleto tem 47 ou 48);return;}mostrar(analisar(d));const benef=document.getElementById('benef');if(benef) benef.innerHTML=chk('info', 'Beneficiário e pagador', 'arraste o PDF para identificar — a linha digitável não traz esses dados');lead.className='lead show';}document.getElementById('btn').onclick=()=>conferirLinha(document.getElementById('manual').value);document.getElementById('manual').addEventListener('keydown',e=>{ if(e.key==='Enter') conferirLinha(e.target.value); });
+
+function mostrarPagador(texto){
+const el=document.getElementById('pagador'); if(!el || !texto) return;
+const p=extrairPagador(texto); if(!p) return;
+el.innerHTML=chk('ok', 'Pagador (você)', p.tipo + ': ' + docFmt(p.doc));
+}
+
+function chk(estado, titulo, detalhe){
+const ic={ok:'✓', warn:'!', bad: 'X', wait:'...', info:'ℹ'}(estado);
+const cor={ok:'#7be36f', warn:'#f0c04a', bad: '#ef8b8b', wait:'#a9c7a0', info:'#a9c7a0'}
+(estado);
+return '' + ic + '' + titulo + '' + detalhe + '';
+}
+
+const drop=document.getElementById('drop'), input=document.getElementById('file');
+const result=document.getElementById('result'), selo=document.getElementById('selo'),
+checks=document.getElementById('checks'), lead=document.getElementById('lead');
+
+function mostrar(r){
+const d=r.dados;
+result.className='result show '+r.nivel;
+selo.textContent=r.msg;
+let h='';
+const intOk=d.dvOk!==false;
+h+=chk(intOk?'ok':'bad', 'Código de barras', intOk?'íntegro, sem sinais de 
+adulteração':'NÃO confere — possível adulteração');
+
+if(d.tipo && d.tipo!=='-'){
+let cat=d.fornecedor? d.fornecedor + ' — ' + (d.segmento || d.tipo) : (d.segmento || d.tipo);
+if(d.banco) cat+= ' — ' + (BANCOS(d.banco) || ('banco '+d.banco));
+h+=chk('ok', 'Emissor', cat);
+}
+
+if(d.valor!=null){
+if(d.valor>0){
+valorTexto=brl(d.valor); valorRevelado=false;
+h+='✓ValorR$ •••••• (mostrar/ocultar)';} 
+else { h+=chk('warn', 'Valor', 'não identificado'); }
+}
+if(d.venc) h+=chk('ok', 'Vencimento', d.venc.toLocaleDateString('pt-BR'));
+h+='';
+checks.innerHTML=h;
+}
+
+async function enriquecerCNPJ(texto){
+const benef=document.getElementById('benef');
+if(!benef||!texto) return;
+const m=texto.match(/\d{2}.?\d{3}.?\d{3}/?\d{4}-?\d{2}/);
+if(!m) return;
+const cnpj=m.replace(/\D/g,'');
+benef.innerHTML=chk('wait', 'Beneficiário', 'consultando CNPJ ' + cnpjFmt(cnpj) + '...');
+try{
+const resp=await fetch('brasilapi.com.br);
+if(!resp.ok) throw 0;
+const j=await resp.json();
+const ativa=(j.descricao_situacao_cadastral||'').toUpperCase().includes('ATIVA');
+let det= (j.razao_social||'-') + '
+Situação na Receita: ' + (j.descricao_situacao_cadastral||'-');
+if(j.data_inicio_atividade){
+det+= ' aberta em ' + dataFmt(j.data_inicio_atividade);
+}
+benef.innerHTML=chk(ativa?'ok':'bad', 'Beneficiário CNPJ ' + cnpjFmt(cnpj), det);
+}catch(e){
+benef.innerHTML=chk('warn', 'Beneficiário', 'não consegui consultar o CNPJ ' + cnpjFmt(cnpj) + ' agora');
+}
+}
+
+drop.addEventListener('click', () => { input.click(); });
+drop.ondragover=e=>{e.preventDefault(); drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault(); drop.classList.remove('over'); 
+if(e.dataTransfer.files.length > 0) processar(e.dataTransfer.files); };
+input.onchange=()=>{if(input.files.length > 0) processar(input.files); };
+
+async function processar(files){
+if(!files || files.length === 0) return;
+selo.textContent='Lendo...'; result.className='result show'; checks.innerHTML='';
+lead.className='lead';
+try{const texto = await extrairTexto(files);
+const linha = acharLinha(texto);
+if(!linha){
+result.className='result show amarelo';
+selo.textContent='! Não encontrei a linha digitável';
+checks.innerHTML=chk('warn', 'Dica', 'cole a linha digitável no campo acima');
+return;
+}
+const r=analisar(linha);
+r.dados.fornecedor = detectarFornecedor(texto);
+mostrar(r);
+await enriquecerCNPJ(texto);
+mostrarPagador(texto);
+lead.className='lead show';
+}catch(err){
+result.className='result show amarelo';
+selo.textContent='! Não consegui ler o PDF';
+checks.innerHTML=chk('warn', 'Tente assim', 'cole a linha digitável no campo acima — 
+funciona sempre');
+}
+}
+
+function conferirLinha(raw){
+const d=(raw ||'').replace(/\D/g,'');
+if(d.length !==47 && !(d.length===48&&d==='8')){
+result.className='result show amarelo';
+selo.textContent='! Linha digitável incompleta';
+checks.innerHTML=chk('warn', 'Conferência', 'recebi ' + d.length + ' dígitos; um boleto 
+tem 47 ou 48');
+return;
+}
+
+mostrar(analisar(d));
+const benef=document.getElementById('benef');
+if(benef) benef.innerHTML=chk('info', 'Beneficiário e pagador', 'arraste o PDF para
+identificar — a linha digitável não traz esses dados');
+lead.className='lead show';
+}
+
+document.getElementById('btn').onclick=
+()=>conferirLinha(document.getElementById('manual').value);
+document.getElementById('manual').addEventListener('keydown',e=>{ if(e.key==='Enter')
+conferirLinha(e.target.value); });
