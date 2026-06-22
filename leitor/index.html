@@ -21,8 +21,16 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .hdr em{font-style:normal;color:var(--vivo)}
 
 /* ---- Contador social ---- */
-.cnt{text-align:center;margin:0 0 18px;font-size:12px;color:var(--t2)}
+.cnt{text-align:center;margin:0 0 8px;font-size:12px;color:var(--t2)}
 .cnt b{color:var(--vivo);font-weight:700;font-size:13px}
+
+/* ---- Estatísticas públicas (corretos / atenção / fraudes) ---- */
+.stats{display:flex;justify-content:center;gap:18px;margin:0 0 18px;flex-wrap:wrap}
+.stat-item{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--t2);min-width:56px}
+.stat-item b{font-size:16px;font-weight:700;line-height:1.3}
+.stat-verde b{color:#7be36f}
+.stat-amarelo b{color:#f0c04a}
+.stat-vermelho b{color:#ef8b8b}
 
 /* ---- Hero: campo principal ---- */
 h1{font-size:20px;font-weight:700;margin:0 0 4px;text-align:center;color:#fff}
@@ -105,6 +113,11 @@ footer a{color:var(--vivo);text-decoration:none}
 
   <!-- Contador social -->
   <div class="cnt">Já conferimos <b id="counter">0</b> boletos</div>
+  <div class="stats" id="stats">
+    <div class="stat-item stat-verde"><b id="statCorretos">0</b><span>corretos</span></div>
+    <div class="stat-item stat-amarelo"><b id="statAtencao">0</b><span>em atenção</span></div>
+    <div class="stat-item stat-vermelho"><b id="statFraudes">0</b><span>fraudes pegas</span></div>
+  </div>
 
   <!-- Hero: campo principal -->
   <h1>Cole a linha digitável do boleto</h1>
@@ -168,14 +181,26 @@ footer a{color:var(--vivo);text-decoration:none}
 <script>
 /* ========== CONTADOR SOCIAL (global, via Google Sheets + Apps Script) ========== */
 const counterEl = document.getElementById('counter');
+const statCorretosEl = document.getElementById('statCorretos');
+const statAtencaoEl = document.getElementById('statAtencao');
+const statFraudesEl = document.getElementById('statFraudes');
 let totalValidacoes = 0;
 
 // Cole aqui a URL do seu Web App do Apps Script (termina em /exec)
 const COUNTER_API_URL = 'https://script.google.com/macros/s/AKfycbyc_EWaRQh3i1r-PIOK7f7qsnpFXpDvqDAuMezpnwu9F-TPcc6E6_-ns4VYMqV15cPcPQ/exec';
 
-function exibirContador(v){
-  totalValidacoes = v;
+function exibirContador(dados){
+  // aceita tanto um número simples (fallback local) quanto um objeto {total,corretos,atencao,fraudes}
+  if(typeof dados === 'number'){
+    totalValidacoes = dados;
+    counterEl.textContent = totalValidacoes.toLocaleString('pt-BR');
+    return;
+  }
+  totalValidacoes = dados.total || 0;
   counterEl.textContent = totalValidacoes.toLocaleString('pt-BR');
+  if(statCorretosEl) statCorretosEl.textContent = (dados.corretos||0).toLocaleString('pt-BR');
+  if(statAtencaoEl) statAtencaoEl.textContent = (dados.atencao||0).toLocaleString('pt-BR');
+  if(statFraudesEl) statFraudesEl.textContent = (dados.fraudes||0).toLocaleString('pt-BR');
 }
 
 async function carregarContador(){
@@ -183,22 +208,22 @@ async function carregarContador(){
   try{
     const resp = await fetch(COUNTER_API_URL + '?acao=ler');
     const data = await resp.json();
-    exibirContador(data.total || 0);
+    exibirContador(data);
   }catch(e){
     console.error('Não consegui carregar o contador global', e);
   }
 }
 
-async function incrementarContador(){
+async function incrementarContador(nivel){
   if(COUNTER_API_URL.includes('COLE_AQUI')){
     // fallback local enquanto a API não está configurada
     exibirContador(totalValidacoes+1);
     return;
   }
   try{
-    const resp = await fetch(COUNTER_API_URL + '?acao=incrementar');
+    const resp = await fetch(COUNTER_API_URL + '?acao=incrementar&nivel=' + encodeURIComponent(nivel||''));
     const data = await resp.json();
-    exibirContador(data.total || (totalValidacoes+1));
+    exibirContador(data);
   }catch(e){
     console.error('Não consegui incrementar o contador global', e);
     exibirContador(totalValidacoes+1); // não deixa a experiência quebrar
@@ -393,7 +418,7 @@ function mostrar(r){
   }
   if(d.venc)h+=chk('ok','Vencimento',d.venc.toLocaleDateString('pt-BR'));
   checks.innerHTML=h;renderValor();ctaMax.style.display='block';
-  incrementarContador();
+  incrementarContador(r.nivel);
 }
 
 function mostrarPagador(txt){
