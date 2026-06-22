@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -81,6 +80,10 @@ h1{font-size:20px;font-weight:700;margin:0 0 4px;text-align:center;color:#fff}
 .lead label{font-size:12px;color:var(--t2);display:flex;gap:8px;align-items:flex-start;margin-top:8px}
 .lead .lgpd{font-size:11px;color:var(--t2);margin-top:6px;opacity:.7}
 
+.btn-reset{display:block;width:100%;margin-top:16px;padding:12px;border-radius:10px;border:1.5px solid var(--ln);background:transparent;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-reset:hover{border-color:var(--vivo);color:var(--vivo);background:rgba(50,191,46,.06)}
+.btn-reset:active{transform:scale(.98)}
+
 .cta-max{display:none;margin:18px auto 0;padding:12px 24px;border-radius:10px;border:1px solid var(--vivo);background:transparent;color:var(--vivo);font-weight:600;font-size:14px;cursor:pointer;text-align:center;text-decoration:none;transition:.15s;width:100%}
 .cta-max:hover{background:var(--vivo);color:var(--bg)}
 
@@ -147,6 +150,7 @@ footer a{color:var(--vivo);text-decoration:none}
       <label><input type="checkbox" id="consent"> Autorizo contato pelo WhatsApp informado.</label>
       <p class="lgpd">Nenhum dado é armazenado. Validação 100% no seu navegador.</p>
     </div>
+    <button class="btn-reset" id="btnReset" type="button">↺ Conferir outro boleto</button>
   </div>
 
   <a class="cta-max" id="ctaMax" href="https://wa.me/5514998973117?text=Quero%20saber%20mais%20sobre%20a%20Prote%C3%A7%C3%A3o%20M%C3%A1xima" target="_blank" rel="noopener">
@@ -323,11 +327,26 @@ const checks=document.getElementById('checks'),lead=document.getElementById('lea
 const benef=document.getElementById('benef'),pagadorEl=document.getElementById('pagador');
 const ctaMax=document.getElementById('ctaMax');
 const pwdBox=document.getElementById('pwdBox'),pwdInput=document.getElementById('pwdInput');
+const manualInput=document.getElementById('manual'),secPdf=document.getElementById('secPdf');
+const btnReset=document.getElementById('btnReset');
 
 function limparResultado(){
   result.className='result';checks.innerHTML='';benef.innerHTML='';pagadorEl.innerHTML='';
   lead.className='lead';ctaMax.style.display='none';pwdBox.className='pwd-box';
 }
+
+function resetTudo(){
+  limparResultado();
+  manualInput.value='';
+  fileInput.value='';
+  pendingFile=null;
+  pwdInput.value='';
+  secPdf.open=false;
+  valorRevelado=false;
+  manualInput.focus();
+  manualInput.scrollIntoView({behavior:'smooth',block:'center'});
+}
+btnReset.onclick=resetTudo;
 
 function mostrar(r){
   const d=r.dados;
