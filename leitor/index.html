@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -165,18 +166,43 @@ footer a{color:var(--vivo);text-decoration:none}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-/* ========== CONTADOR SOCIAL ========== */
+/* ========== CONTADOR SOCIAL (global, via Google Sheets + Apps Script) ========== */
 const counterEl = document.getElementById('counter');
 let totalValidacoes = 0;
 
-function carregarContador(){
-  try{ totalValidacoes = parseInt(localStorage.getItem('ong_count') || '0', 10); } catch(e){}
+// Cole aqui a URL do seu Web App do Apps Script (termina em /exec)
+const COUNTER_API_URL = 'https://script.google.com/macros/s/AKfycbyc_EWaRQh3i1r-PIOK7f7qsnpFXpDvqDAuMezpnwu9F-TPcc6E6_-ns4VYMqV15cPcPQ/exec';
+
+function exibirContador(v){
+  totalValidacoes = v;
   counterEl.textContent = totalValidacoes.toLocaleString('pt-BR');
 }
-function incrementarContador(){
-  totalValidacoes++;
-  try{ localStorage.setItem('ong_count', totalValidacoes); } catch(e){}
-  counterEl.textContent = totalValidacoes.toLocaleString('pt-BR');
+
+async function carregarContador(){
+  if(COUNTER_API_URL.includes('COLE_AQUI')){return;} // ainda não configurado
+  try{
+    const resp = await fetch(COUNTER_API_URL + '?acao=ler');
+    const data = await resp.json();
+    exibirContador(data.total || 0);
+  }catch(e){
+    console.error('Não consegui carregar o contador global', e);
+  }
+}
+
+async function incrementarContador(){
+  if(COUNTER_API_URL.includes('COLE_AQUI')){
+    // fallback local enquanto a API não está configurada
+    exibirContador(totalValidacoes+1);
+    return;
+  }
+  try{
+    const resp = await fetch(COUNTER_API_URL + '?acao=incrementar');
+    const data = await resp.json();
+    exibirContador(data.total || (totalValidacoes+1));
+  }catch(e){
+    console.error('Não consegui incrementar o contador global', e);
+    exibirContador(totalValidacoes+1); // não deixa a experiência quebrar
+  }
 }
 carregarContador();
 
