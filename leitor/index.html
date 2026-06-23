@@ -85,9 +85,9 @@ h1{font-size:20px;font-weight:700;margin:0 0 4px;text-align:center;color:#fff}
 .aviso{font-size:12px;color:var(--t2);margin-top:6px}
 .lead{margin-top:14px;display:none}
 .lead.show{display:block}
-.lead input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid var(--ln);background:var(--bg);color:var(--t1);font-size:14px;margin-top:4px}
-.lead label{font-size:12px;color:var(--t2);display:flex;gap:8px;align-items:flex-start;margin-top:8px}
-.lead .lgpd{font-size:11px;color:var(--t2);margin-top:6px;opacity:.7}
+.lead-email{font-size:13px;color:var(--t1);background:rgba(50,191,46,.06);border:1px solid var(--ln);border-radius:10px;padding:10px 12px;text-align:center}
+.lead-email a{color:var(--vivo);font-weight:700;text-decoration:none}
+.lead-email a:hover{text-decoration:underline}
 
 .btn-reset{display:block;width:100%;margin-top:16px;padding:12px;border-radius:10px;border:1.5px solid var(--ln);background:transparent;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
 .btn-reset:hover{border-color:var(--vivo);color:var(--vivo);background:rgba(50,191,46,.06)}
@@ -96,8 +96,8 @@ h1{font-size:20px;font-weight:700;margin:0 0 4px;text-align:center;color:#fff}
 .cta-max{display:none;margin:18px auto 0;padding:12px 24px;border-radius:10px;border:1px solid var(--vivo);background:transparent;color:var(--vivo);font-weight:600;font-size:14px;cursor:pointer;text-align:center;text-decoration:none;transition:.15s;width:100%}
 .cta-max:hover{background:var(--vivo);color:var(--bg)}
 
-footer{margin-top:28px;text-align:center;font-size:11px;color:var(--t2);opacity:.5}
-footer a{color:var(--vivo);text-decoration:none}
+footer{margin-top:28px;text-align:center;font-size:11px;color:var(--t2);opacity:.7}
+footer a{color:var(--vivo);text-decoration:none;font-weight:600;opacity:1}
 
 @media(max-width:480px){.w{padding:16px 14px 28px} h1{font-size:18px} .hdr img{width:30px;height:30px}}
 </style>
@@ -160,14 +160,12 @@ footer a{color:var(--vivo);text-decoration:none}
     <p class="nota">Conferimos a integridade do boleto. Não comparamos com o seu histórico — isso é a <strong>Proteção Máxima</strong>.</p>
     <p class="aviso">Apoio à decisão. Em caso de dúvida, confirme no canal oficial do fornecedor.</p>
     <div class="lead" id="lead">
-      <input type="text" id="whats" placeholder="Seu WhatsApp (opcional) — avisamos sobre novos golpes">
-      <label><input type="checkbox" id="consent"> Autorizo contato pelo WhatsApp informado.</label>
-      <p class="lgpd">Nenhum dado é armazenado. Validação 100% no seu navegador.</p>
+      <p class="lead-email">Quer ser avisado sobre novos golpes? Manda um e-mail pra <a href="mailto:contato@olhonagarantia.com.br">contato@olhonagarantia.com.br</a></p>
     </div>
     <button class="btn-reset" id="btnReset" type="button">↺ Conferir outro boleto</button>
   </div>
 
-  <a class="cta-max" id="ctaMax" href="https://wa.me/5514998973117?text=Quero%20saber%20mais%20sobre%20a%20Prote%C3%A7%C3%A3o%20M%C3%A1xima" target="_blank" rel="noopener">
+  <a class="cta-max" id="ctaMax" href="mailto:contato@olhonagarantia.com.br?subject=Quero%20saber%20mais%20sobre%20a%20Prote%C3%A7%C3%A3o%20M%C3%A1xima">
     Quero a Proteção Máxima →
   </a>
 
@@ -187,7 +185,7 @@ const statFraudesEl = document.getElementById('statFraudes');
 let totalValidacoes = 0;
 
 // Cole aqui a URL do seu Web App do Apps Script (termina em /exec)
-const COUNTER_API_URL = 'https://script.google.com/macros/s/AKfycbyBTduLNOQ65tr2eM67af5cl-r2g2YIGSbxfttnLZRRqLZ9fT9jQZJJMb7LDVxH4MeL/exec';
+const COUNTER_API_URL = 'https://script.google.com/macros/s/AKfycbyc_EWaRQh3i1r-PIOK7f7qsnpFXpDvqDAuMezpnwu9F-TPcc6E6_-ns4VYMqV15cPcPQ/exec';
 
 function exibirContador(dados){
   // aceita tanto um número simples (fallback local) quanto um objeto {total,corretos,atencao,fraudes}
